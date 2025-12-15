@@ -39,18 +39,19 @@ CPU-Perf 提供了一种相对简单、可复现的方式来完成上述测试�
 
 CPU-Perf/
 ├── collector.sh
-│ 负责参数解析和实验流程控制
+│   负责参数解析和实验流程控制
 │
 ├── agent_executor.sh
-│ 负责 cgroup 配置、perf 监控、CPU 使用率采集以及资源清理
+│   负责 cgroup 配置、perf 监控、CPU 使用率采集以及资源清理
 │
 ├── cpuUsages.sh
-│ 基于 sar 的 CPU 使用率采样脚本
+│   基于 sar 的 CPU 使用率采样脚本
 │
 ├── mock_load_script.sh
-│ 示例 CPU 负载脚本
+│   示例 CPU 负载脚本
 │
 └── README.md
+
 
 
 
@@ -114,6 +115,7 @@ CPU 使用率时间序列
 说明
 该项目更偏向实验脚本集合，主要用于系统性能测试和研究场景。
 如果需要更通用的负载测试能力，需要在此基础上进一步扩展。
+
 
 
 
