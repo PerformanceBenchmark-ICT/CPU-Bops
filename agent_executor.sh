@@ -241,8 +241,6 @@ if [[ -x ./cpuUsages.sh ]]; then
   setsid ./cpuUsages.sh >"$CPU_FILE" 2>/dev/null &
   CPU_PID=$!
 else
-  # [!! 关键修复 (V15) !!]
-  # 1. 确保 sysstat (sar) 已安装
   if ! command -v sar &> /dev/null; then
     echo "FATAL: 'sysstat' (sar) is missing. Please install it!" >&2
     # 立即杀死已启动的 perf，避免僵尸进程
@@ -270,9 +268,88 @@ fi
 
 
 
-# --- 启动负载 (与 V6 相同) ---
+# --- [新增] 构造普适负载命令：支持 sh / py / ELF / shebang ---
+build_load_cmd() {
+  local p="$1"
+  local ext="${p##*.}"
+  local first2 firstline interp
+
+  # 统一成绝对路径（更稳）
+  if command -v readlink >/dev/null 2>&1; then
+    p="$(readlink -f "$p" 2>/dev/null || echo "$p")"
+  fi
+
+  # 路径带空格会被后面的 LOAD_CMD=($LOAD_CMD_STR) 拆炸（不改其他逻辑前先强约束）
+  if [[ "$p" == *" "* ]]; then
+    echo "FATAL: workload path contains spaces: $p" >&2
+    echo "Please move/rename it to a path without spaces." >&2
+    return 11
+  fi
+
+  # 0) Windows PE .exe 检测（文件头通常是 'MZ'）
+  first2="$(head -c 2 "$p" 2>/dev/null || true)"
+  if [[ "$first2" == "MZ" ]]; then
+    echo "FATAL: Detected Windows PE executable (MZ header): $p" >&2
+    echo "This environment runs Linux workloads only." >&2
+    echo "Please upload a Linux ELF executable or a script (.sh/.py/shebang)." >&2
+    return 12
+  fi
+
+  # 1) ELF 可执行：文件头是 0x7f 'E' 'L' 'F'
+  if head -c 4 "$p" 2>/dev/null | od -An -t u1 2>/dev/null | tr -d ' \n' | grep -q '^127697670$'; then
+    echo "$p"
+    return 0
+  fi
+
+  # 2) shebang 脚本：第一行以 #! 开头（不依赖后缀）
+  firstline="$(head -n 1 "$p" 2>/dev/null || true)"
+  if [[ "$firstline" == \#!* ]]; then
+    # 如果文件本身可执行：直接跑（交给内核按 shebang 调解释器）
+    if [[ -x "$p" ]]; then
+      echo "$p"
+      return 0
+    fi
+
+    # 否则：解析 shebang 的解释器来跑，避免 Permission denied
+    # 例：#!/usr/bin/env python3  -> /usr/bin/env python3
+    #     #!/bin/bash              -> /bin/bash
+    interp="${firstline#\#!}"
+    interp="${interp#"${interp%%[![:space:]]*}"}"  # ltrim
+    if [[ -n "$interp" ]]; then
+      echo "$interp $p"
+      return 0
+    fi
+
+    echo "FATAL: invalid shebang line in $p" >&2
+    return 13
+  fi
+
+  # 3) 仅按后缀兜底（最小集合：sh/py）
+  if [[ "$ext" == "sh" ]]; then
+    echo "bash $p"
+    return 0
+  elif [[ "$ext" == "py" ]]; then
+    echo "python3 $p"
+    return 0
+  fi
+
+  # 4) 兜底：当作可执行文件直接跑（若不可执行会报错，stderr 会记录）
+  echo "$p"
+}
+
+# --- 启动负载（普适） ---
 echo "Starting workload: $UPLOAD_FILE"
-LOAD_CMD=(bash "$UPLOAD_FILE" "--start-load-pct=$START_LOAD_PCT" "--end-load-pct=$END_LOAD_PCT" "--step-pct=$STEP_PCT")
+
+# 不改变参数体系：start/end/step 仍然解析，但对真实负载不再默认注入
+LOAD_CMD_STR="$(build_load_cmd "$UPLOAD_FILE")"
+
+# shellcheck disable=SC2206
+LOAD_CMD=($LOAD_CMD_STR)
+
+
+
+
+
 
 setsid sudo cgexec -g cpu,memory:"$CG" "${LOAD_CMD[@]}" \
   >"$STDOUT_FILE" 2>"$STDERR_FILE" &
@@ -285,6 +362,10 @@ echo "All processes launched. Load will run for ${LOAD_SEC}s, Monitor will run f
 
 START_TS=$(date +%s)
 WORK_DONE=0
+
+
+
+
 
 # --- 主循环 (V16 - 强制跑满时长) ---
 LOAD_ALIVE=1  # 标记负载是否还活着
