@@ -186,7 +186,7 @@ bash collector.sh \
   --id=ramp_test \
   --upload-file-path=./mock_load_script.sh \
   --output-path=/tmp/ramp_test.json \
-  --monitor-duration=30s \
+  --monitor-duration=60s \
   --start-load-pct=10 \
   --end-load-pct=50 \
   --step-pct=10
@@ -215,6 +215,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
