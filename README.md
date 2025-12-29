@@ -19,11 +19,15 @@ CPU-BOPs 是一组用于在 Linux CPU 平台上测量负载程序运行周期消
 原因：脚本需要创建 Cgroup 节点、挂载子系统以及运行系统级监控。
 
 
-工具名称,作用,对应软件包 (CentOS/RHEL),对应软件包 (Ubuntu/Debian)
-perf,采集硬件性能事件 (BOPs),perf,linux-tools-$(uname -r)
-cgroup-tools,"管理资源隔离组 (cgcreate, cgexec)",libcgroup-tools,cgroup-tools
-sysstat,采集 CPU 使用率 (sar),sysstat,sysstat
-bc,(可选) 部分数值计算,bc,bc
+### 3. 核心依赖工具 (必须安装)
+脚本运行依赖以下系统工具包，请根据发行版进行安装：
+
+| 工具名称 | 作用 | 对应软件包 (CentOS/RHEL) | 对应软件包 (Ubuntu/Debian) |
+| :--- | :--- | :--- | :--- |
+| **perf** | 采集硬件性能事件 (BOPs) | `perf` | `linux-tools-$(uname -r)` |
+| **cgroup-tools** | 管理资源隔离组 (`cgcreate`) | `libcgroup-tools` | `cgroup-tools` |
+| **sysstat** | 采集 CPU 使用率 (`sar`) | `sysstat` | `sysstat` |
+| **bc** | (可选) 部分数值计算 | `bc` | `bc` |
 
 
 ## 项目解决的问题
@@ -232,6 +236,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
