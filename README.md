@@ -60,58 +60,10 @@ openstack server show <云主机uuid> |grep OS-EXT-SRV-ATTR:instance_name
 
 ## 支持的负载类型
 
-CPU-BOPs **支持任意 Linux 可执行负载**，包括：
-
-* **Linux 原生可执行程序（ELF）**
-* **Shell 脚本（`.sh`）**
-* **Python 脚本（`.py`）**
-* **带 shebang 的可执行脚本**（如 `#!/usr/bin/env python3`）
+CPU-BOPs **支持任意 Linux 可执行负载**
 
 
-
----
-
-
-CPU-BOPs 支持在 Linux 环境 下运行并测量以下类型的负载：
-
-1. Linux 原生可执行文件（ELF）
-
-由 C / C++ / Rust / Go 等语言在 Linux 环境下编译生成
-
-文件格式为 ELF
-
-文件名是否包含 .exe 后缀 不影响执行
-
-示例：
-
-gcc fft.c -O2 -o fft
-
-
-生成的 fft 为 Linux ELF 可执行文件，可直接作为负载运行。
-
-⚠️ 注意：
-
-必须在 Linux 环境下编译生成 ELF 文件
-
-在 Windows 下编译生成的 .exe（PE 格式）无法在 Linux 上运行
-
-2. 脚本类负载
-
-Shell 脚本（.sh）
-
-Python 脚本（.py）
-
-带 shebang 的可执行脚本（如 #!/usr/bin/env python3）
-
-示例：
-
-#!/usr/bin/env python3
-while True:
-    pass
-
-
-
-## 目录结构
+## 工具脚本目录结构
 
 ```text
 CPU-BOPs/
@@ -205,6 +157,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
