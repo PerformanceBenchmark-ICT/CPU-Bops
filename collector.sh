@@ -1,37 +1,27 @@
 #!/bin/bash
 # ----------------------------------------------------
-# collector.sh: 采集脚本启动器
+# collector.sh: 采集脚本启动器 (精简版 - BOPs Only)
 # ----------------------------------------------------
-# 作用：解析后端传来的命令行参数，并启动 Python 执行器。
+# 作用：解析命令行参数，并启动核心执行器 agent_executor.sh
 # ----------------------------------------------------
 set -e # 任何命令失败则立即退出
 
-# --- 1. 初始化所有参数的默认值 ---
+# --- 1. 初始化参数默认值 ---
 TASK_ID=""
 UPLOAD_FILE_PATH=""
-CPU_LIMIT_PCT=100
-MEM_LIMIT_PCT=100
+OUTPUT_PATH="" # 最终结果输出路径
 MONITOR_DURATION="60s"
 COLLECT_FREQUENCY="1s"
-START_LOAD_PCT=0
-END_LOAD_PCT=0
-STEP_PCT=0
-OUTPUT_PATH="" # 最终JSON结果的输出路径 (关键!)
 
-# --- 2. 解析传入的命令行参数 (格式: --key="value") ---
+# --- 2. 解析传入的命令行参数 ---
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --id=*) TASK_ID="${1#*=}";;
         --upload-file-path=*) UPLOAD_FILE_PATH="${1#*=}";;
-        --cpu-limit-pct=*) CPU_LIMIT_PCT="${1#*=}";;
-        --mem-limit-pct=*) MEM_LIMIT_PCT="${1#*=}";;
+        --output-path=*) OUTPUT_PATH="${1#*=}";;
         --monitor-duration=*) MONITOR_DURATION="${1#*=}";;
         --collect-frequency=*) COLLECT_FREQUENCY="${1#*=}";;
-        --start-load-pct=*) START_LOAD_PCT="${1#*=}";;
-        --end-load-pct=*) END_LOAD_PCT="${1#*=}";;
-        --step-pct=*) STEP_PCT="${1#*=}";;
-        --output-path=*) OUTPUT_PATH="${1#*=}";;
-        *) echo "警告: 未知参数 $1";;
+        *) echo "警告: 忽略未知参数 $1";;
     esac
     shift
 done
@@ -39,31 +29,35 @@ done
 # --- 3. 检查必要参数 ---
 if [ -z "$TASK_ID" ] || [ -z "$UPLOAD_FILE_PATH" ] || [ -z "$OUTPUT_PATH" ]; then
   echo "错误: --id, --upload-file-path, 和 --output-path 是必需的。" >&2
-  # 即使失败，也按 API 文档 要求生成一个错误 JSON
-  echo "{\"id\": \"$TASK_ID\", \"exit_error\": \"Missing required arguments\"}" > "$OUTPUT_PATH.error"
   exit 1
 fi
 
-# --- 4. 调用 Python 执行器 (假设 agent_executor.py 在同一目录) ---
-# 我们把所有解析到的变量作为参数传递给Python
-# Python 将处理 Cgroups、进程管理和 JSON 生成
-echo "启动 agent_executor.py..."
+# --- 4. 检查核心脚本是否存在 ---
+if [ ! -f "./agent_executor.sh" ]; then
+    echo "错误: 当前目录下找不到 agent_executor.sh" >&2
+    exit 1
+fi
+
+# --- 5. 调用执行器 agent_executor.sh ---
+echo "启动 agent_executor.sh..."
+echo "  ID: $TASK_ID"
+echo "  负载: $UPLOAD_FILE_PATH"
+echo "  时长: $MONITOR_DURATION"
+
+# 确保有执行权限
+chmod +x ./agent_executor.sh 2>/dev/null || true
+
+# 只传递需要的 5 个参数
 bash ./agent_executor.sh \
     --id="$TASK_ID" \
     --upload-file-path="$UPLOAD_FILE_PATH" \
-    --cpu-limit-pct="$CPU_LIMIT_PCT" \
-    --mem-limit-pct="$MEM_LIMIT_PCT" \
+    --output-path="$OUTPUT_PATH" \
     --monitor-duration="$MONITOR_DURATION" \
-    --collect-frequency="$COLLECT_FREQUENCY" \
-    --start-load-pct="$START_LOAD_PCT" \
-    --end-load-pct="$END_LOAD_PCT" \
-    --step-pct="$STEP_PCT" \
-    --output-path="$OUTPUT_PATH"
+    --collect-frequency="$COLLECT_FREQUENCY"
 
-# --- 5. 捕获 Python 脚本的退出码并返回 ---
+# --- 6. 捕获退出码并返回 ---
 exit_code=$?
 if [ $exit_code -ne 0 ]; then
-    echo "错误: Python 执行器 agent_executor.py 失败，退出码 $exit_code" >&2
-    # 如果 Python 失败，它自己会生成错误 JSON，这里只需退出
+    echo "错误: 执行器 agent_executor.sh 异常退出，代码 $exit_code" >&2
 fi
 exit $exit_code
