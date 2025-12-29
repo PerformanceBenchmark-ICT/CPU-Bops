@@ -151,6 +151,7 @@ bops_x86_test_min.txt：
 Terminal：
 
 {
+
   "arch": "x86",
   
   "interval_duration": 1.001007,
@@ -158,6 +159,7 @@ Terminal：
   "BOPs": 4.790111,
   
   "GFLOPS": 0.008660
+  
 }
 
 
@@ -196,6 +198,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
