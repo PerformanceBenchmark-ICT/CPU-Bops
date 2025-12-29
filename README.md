@@ -47,8 +47,26 @@ CPU-BOPs 提供了一种 **轻量、可复现、面向真实负载的实验执�
 * **不支持 Windows `.exe`**：无法运行 PE 格式文件。
 * **不负责语言运行时管理**：如 Java 的 Classpath、Python 的 venv 需要用户提前配置好。
 * **架构差异**：不同 CPU 架构（x86 vs ARM）支持的硬件事件不同，工具会自动识别，但指标名称会有差异。
-* **架构差异**：虚拟机需要开通perf的访问权限
+* **虚拟机**：虚拟机需要开通访问权限
 ---
+
+## 虚拟机访问权限开通
+在虚拟机上统计BOPS所用到的工具，需要打开虚拟机直通物理机的开关，开关打开之后，需要重启物理机上的虚拟机才能生效，步骤如下：
+1.在openstack控制节点执行：
+openstack server show <云主机uuid> |grep OS-EXT-SRV-ATTR:instance_name
+得到输出
+| OS-EXT-SRV-ATTR:instance_name       | instance-00000c3c
+
+然后到虚拟机所在的物理机上执行：virsh edit instance-00000c3c
+2. 找到这个 <cpu mode='host-passthrough'>
+3.步骤2中红色字体表示的值即为需要修改的值。即cpu mode 改成 host-passthrough
+4.重启这个虚拟机,执行如下命令：
+   # virsh  reboot  <虚拟机ID或名称>
+   
+
+注：以上操作步骤只是开通虚拟机的权限，对宿主机没有影响。
+
+
 ## 支持的负载类型
 
 CPU-BOPs **支持任意 Linux 可执行负载**，包括：
@@ -204,6 +222,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
