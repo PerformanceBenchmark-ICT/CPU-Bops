@@ -25,16 +25,14 @@ CPU-BOPs 是一组用于在 Linux CPU 平台上测量负载程序运行周期消
 | :--- | :--- | :--- | :--- |
 | **perf** | 采集硬件性能事件 (BOPs) | `perf` | `linux-tools-$(uname -r)` |
 | **cgroup-tools** | 管理资源隔离组 (`cgcreate`) | `libcgroup-tools` | `cgroup-tools` |
-| **sysstat** | 采集 CPU 使用率 (`sar`) | `sysstat` | `sysstat` |
-| **bc** | (可选) 部分数值计算 | `bc` | `bc` |
+
 
 
 ## 项目解决的问题
 
 在系统性能实验与算力度量中，常常需要回答以下问题：
 
-* 某个负载在给定 CPU / 内存限制下的运行行为如何？
-* 不同负载强度、不同执行时间窗口下，CPU 使用率和 BOPs 如何变化？
+* 不同负载强度、不同执行时间窗口下， BOPs 如何变化？
 * 如何在可控、可复现的环境中，对真实负载进行统一测量？
 
 CPU-BOPs 提供了一种 **轻量、可复现、面向真实负载的实验执行与采集框架**。
@@ -122,14 +120,8 @@ CPU-BOPs/
 ├── agent_executor.sh
 │   核心执行器：
 │   - cgroup 配置
-│   -CPU 使用率监控
 │   - 负载进程管理与清理
 │
-├── cpuUsages.sh
-│   基于 sar 的 CPU 使用率采样脚本
-│
-├── mock_load_script.sh
-│   示例：CPU 爬坡负载脚本（用于内部/对照实验）
 │
 └── README.md
 ```
@@ -155,10 +147,8 @@ CPU-BOPs/
 
 | 参数名                   | 含义                      | 默认值 |
 | --------------------- | ----------------------- | --- |
-| `--cpu-limit-pct`     | CPU 使用上限（百分比）           | 100 |
-| `--mem-limit-pct`     | 内存使用上限（百分比）             | 100 |
 | `--monitor-duration`  | 负载**最大允许运行时间（timeout）** | 60s |
-| `--collect-frequency` | CPU 使用率 / 采样间隔     | 1s  |
+| `--collect-frequency` |  采样间隔     | 1s  |
 
 > 说明：
 >
@@ -166,16 +156,6 @@ CPU-BOPs/
 > * 如果负载提前结束，实验会提前进入“空闲监控阶段”。
 
 ---
-
-### 爬坡负载专用参数（仅对 mock_load_script.sh 有效）
-
-以下参数 **仅在使用示例爬坡负载时生效**，对真实负载不会注入或生效：
-
-| 参数名                | 含义       |
-| ------------------ | -------- |
-| `--start-load-pct` | 初始负载强度   |
-| `--end-load-pct`   | 最终负载强度   |
-| `--step-pct`       | 负载强度递增步长 |
 
 ---
 
@@ -199,17 +179,7 @@ bash collector.sh \
 
 ---
 
-### 示例 2：测试示例 CPU 爬坡负载
 
-```bash
-bash collector.sh \
-  --id=ramp_test \
-  --upload-file-path=./mock_load_script.sh \
-  --output-path=./ramp_test.json \
-  --monitor-duration=60s \
-  --start-load-pct=10 \
-  --end-load-pct=50 \
-  --step-pct=10
 ```
 
 ---
@@ -219,7 +189,6 @@ bash collector.sh \
 实验结束后，会在输出目录生成多类日志文件，包括：
 
 * BOPs 采样数据
-* CPU 使用率时间序列
 * 负载程序的 stdout / stderr
 * 实验运行时长信息
 
@@ -235,6 +204,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
