@@ -61,7 +61,7 @@ openstack server show <云主机uuid> |grep OS-EXT-SRV-ATTR:instance_name
 2. 找到这个 <cpu mode='host-passthrough'>
 3.步骤2中红色字体表示的值即为需要修改的值。即cpu mode 改成 host-passthrough
 4.重启这个虚拟机,执行如下命令：
-   # virsh  reboot  <虚拟机ID或名称>
+   "# virsh  reboot  <虚拟机ID或名称>"
    
 
 注：以上操作步骤只是开通虚拟机的权限，对宿主机没有影响。
@@ -222,6 +222,7 @@ CPU-BOPs 是一个 **面向系统性能测量与研究场景的实验工具**，
 * 行为可复现
 * 资源可控
 * 数据可分析
+
 
 
 
