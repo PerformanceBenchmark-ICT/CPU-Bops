@@ -4,7 +4,7 @@ CPU-BOPs 是一组用于在 Linux CPU 平台上测量负载程序运行周期消
 
 该项目通过非入侵的方式，监测被测量的应用程序的运行生命周期，按照指定频率采集BOPs指标关联的指令级的事件操作数，通过计算，最终计算出BOPs值。
 
-## 环境依赖 (Prerequisites)
+## 环境依赖
 
 1、操作系统权限要求：拥有 root 权限 或 sudo 权限
 
@@ -187,6 +187,7 @@ time,value,unit,event,command,pid,cpu,metric_value,metric_unit
 说明
 
 CPU-BOPs 是一个 面向系统性能测量与研究场景的实验工具
+
 
 
 
